@@ -9,6 +9,13 @@ and *what's next on each project's roadmap?*
 
 It is **read-only**. It reports; you decide. Nothing is committed, pushed, or discarded.
 
+![An example sitrep report: five stat tiles across the top, then risk-striped cards for four
+repos showing dirty-tree meters, branch lanes and stash flags, each ending in a recommended
+action, followed by a roadmap row.](docs/report.jpg)
+
+<sup>Example output. The repos above are fictional — a real report is generated from your own
+workspace and never leaves your machine.</sup>
+
 ## Install
 
 Clone it into your skills directory:
