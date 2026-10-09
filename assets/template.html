@@ -18,7 +18,7 @@
   h1 .dot{color:var(--amber)}
   .date{color:var(--dim);font-family:var(--mono);font-size:14px}
   /* ---- top stat blocks ---- */
-  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:18px 0 30px}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:18px 0 30px}
   .stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
   .stat b{display:block;font-size:26px;font-weight:800;font-family:var(--mono)}
   .stat span{color:var(--dim);font-size:12px;text-transform:uppercase;letter-spacing:1px}
@@ -39,7 +39,7 @@
   .risk-med .risk{background:rgba(240,161,60,.15);color:var(--amber)}
   .risk-low .risk{background:rgba(77,163,255,.15);color:var(--blue)}
   .what{color:var(--dim);font-size:13.5px}
-  /* dirty-tree meter: width % ≈ min(100, dirty+untracked files) */
+  /* dirty-tree meter: width % ≈ min(100, dirty + untracked + worktree dirty files) */
   .meter{height:10px;background:var(--panel2);border-radius:6px;overflow:hidden}
   .meter .fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--amber),var(--red))}
   .meter.calm .fill{background:var(--blue)}
@@ -57,8 +57,11 @@
   .bdot.ahead{background:var(--purple)}       /* has unpushed commits */
   .bdot.local{background:var(--amber)}        /* no upstream — exists only on this disk */
   .bdot.gone{background:var(--red)}           /* upstream deleted */
+  .bdot.wt{background:var(--teal)}            /* checked out in a linked worktree */
+  .bdot.tmp{background:var(--red)}            /* worktree in a temp dir — gone on reboot */
   .track{margin-left:auto;font-size:11px;padding:1px 7px;border-radius:4px;color:var(--dim);background:var(--panel2)}
   .track.ahead{color:var(--purple)} .track.local{color:var(--amber)} .track.gone{color:var(--red)} .track.sync{color:var(--green)} .track.cur{color:var(--green)}
+  .track.wt{color:var(--teal)} .track.tmp{color:var(--red);background:rgba(242,85,90,.12)}
   /* stash: dashed = orphaned work not attached to any branch */
   .stash{border:1px dashed var(--amber);border-radius:8px;padding:7px 10px;font-family:var(--mono);font-size:12.5px;color:var(--amber);background:rgba(240,161,60,.06)}
   .rec{border-top:1px solid var(--line);padding-top:9px;font-size:13.5px}
@@ -84,12 +87,14 @@
 
 <header><h1>SITREP<span class="dot">.</span></h1><div class="date">{DATE} · {ROOT}</div></header>
 
-<!-- Totals: repos scanned / need decision / unpushed commits / stashes / clean.
+<!-- Totals: repos scanned / need decision / unpushed commits / uncommitted in worktrees / stashes / clean.
+     Unpushed = the scan's TOTAL UNPUSHED (all branches); worktrees = its TOTAL WT-DIRTY.
      Classes: hot(red) warn(amber) info(blue) ok(green) -->
 <div class="stats">
   <div class="stat"><b>{N}</b><span>repos scanned</span></div>
   <div class="stat hot"><b>{N}</b><span>need a decision</span></div>
   <div class="stat info"><b>{N}</b><span>unpushed commits</span></div>
+  <div class="stat warn"><b>{N}</b><span>uncommitted in worktrees</span></div>
   <div class="stat warn"><b>{N}</b><span>stashes at risk</span></div>
   <div class="stat ok"><b>{N}</b><span>clean &amp; synced</span></div>
 </div>
@@ -105,15 +110,17 @@
     <span class="risk">HIGH</span>
   </div>
   <p class="what">Mid-flight theme rewrite — theme system, core models, regenerated assets</p>
-  <div class="meter"><div class="fill" style="width:99%"></div></div>
-  <div class="meter-label">92 dirty · 7 untracked · +1,809 / −3,942</div>
-  <div class="commits"><span class="cdot"></span><span class="cdot"></span><span class="cdot"></span> 3 unpushed docs commits on main</div>
+  <div class="meter"><div class="fill" style="width:100%"></div></div>
+  <div class="meter-label">92 dirty · 7 untracked in main · 16 in worktrees · +1,809 / −3,942</div>
+  <div class="commits"><span class="cdot"></span><span class="cdot"></span><span class="cdot"></span><span class="cdot"></span><span class="cdot"></span> 5 unpushed — 3 docs commits on main, 2 on claude/jovial-dhawan</div>
   <div class="branches">
     <div class="branch"><span class="bdot cur"></span>main<span class="track ahead">▲3 unpushed</span></div>
-    <div class="branch"><span class="bdot local"></span>claude/jovial-dhawan<span class="track local">local-only · unmerged</span></div>
+    <div class="branch"><span class="bdot local"></span>claude/jovial-dhawan<span class="track local">local-only · ▲2 unpushed</span></div>
+    <div class="branch"><span class="bdot wt"></span>claude/theme-tokens<span class="track wt">worktree · 12 dirty</span></div>
+    <div class="branch"><span class="bdot tmp"></span>detached@f1b89e2<span class="track tmp">/tmp worktree · 4 dirty · gone on reboot</span></div>
   </div>
   <div class="stash">⚑ stash@{0} — TaskFlowView.tsx · +422 lines, nowhere else</div>
-  <div class="rec"><b>→</b> Move the rewrite to feat/theme-rewrite; push the doc commits now</div>
+  <div class="rec"><b>→</b> Commit the /tmp worktree before a reboot takes it; move the rewrite to feat/theme-rewrite; push the doc commits</div>
 </article>
 -->
 </div>
@@ -126,12 +133,13 @@
 
 <h2>Quiet — clean &amp; synced</h2>
 <div class="chips">
-<!-- <span class="chip">Atomic</span> ... -->
+<!-- <span class="chip">status-page</span> ... -->
 </div>
 
 <h2>Housekeeping</h2>
 <ul class="house">
-<!-- <li class="alert"><b>docs</b> has no upstream — one disk failure from gone</li> -->
+<!-- <li class="alert"><b>docs</b> has no upstream — one disk failure from gone</li>
+     <li class="alert"><b>acme-app</b> worktree in /tmp holds 4 uncommitted files — gone on reboot</li> -->
 </ul>
 
 <footer>generated by /sitrep · read-only — no repo was modified</footer>
